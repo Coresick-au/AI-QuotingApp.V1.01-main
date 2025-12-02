@@ -75,6 +75,12 @@ export interface CalculatedShift {
     breakdown: ShiftBreakdown;
 }
 
+export interface InternalExpense {
+    id: string;
+    description: string;
+    cost: number;
+}
+
 export interface Quote {
     id: string;
     quoteNumber: string;
@@ -84,4 +90,5 @@ export interface Quote {
     jobDetails: JobDetails;
     shifts: Shift[];
     extras: ExtraItem[];
+    internalExpenses: InternalExpense[];
 }

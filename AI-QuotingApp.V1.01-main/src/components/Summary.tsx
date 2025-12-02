@@ -1,4 +1,4 @@
-import { Copy, Eye, ExternalLink, X } from 'lucide-react';
+import { Copy, Eye, ExternalLink, X, Plus, TrendingUp } from 'lucide-react';
 import { useState } from 'react';
 import { useQuote } from '../hooks/useQuote';
 
@@ -127,24 +127,42 @@ export default function Summary({ quote }: SummaryProps) {
     const generateShiftBreakdown = () => {
         let breakdown = 'SHIFT BREAKDOWN\n\n';
         const aggregatedShifts = getAggregatedShifts();
-
-        aggregatedShifts.forEach((shift, index) => {
-            const { breakdown: b } = calculateShiftBreakdown(shift);
-            const shiftLabelId = shift.id ?? index + 1;
-            const formattedDate = getFormattedDate(shift.date);
-            breakdown += `Shift ${shiftLabelId} - Day ${index + 1}:\n`;
-            breakdown += `Date: ${formattedDate} | ${shift.techCount > 1 ? `Techs x ${shift.techCount}` : `Tech: ${shift.tech}`}\n`;
-            breakdown += `Time: ${shift.startTime} - ${shift.finishTime}\n`;
-            breakdown += `Day Type: ${shift.dayType}${shift.isNightShift ? ' (Night Shift)' : ''}\n`;
-            breakdown += `\nHours Breakdown:\n`;
-            breakdown += `  Travel In NT: ${b.travelInNT.toFixed(2)}h | OT: ${b.travelInOT.toFixed(2)}h\n`;
-            breakdown += `  Site NT: ${b.siteNT.toFixed(2)}h | OT: ${b.siteOT.toFixed(2)}h\n`;
-            breakdown += `  Travel Out NT: ${b.travelOutNT.toFixed(2)}h | OT: ${b.travelOutOT.toFixed(2)}h\n`;
-            breakdown += `  Total Hours: ${b.totalHours.toFixed(2)}h (Site: ${b.siteHours.toFixed(2)}h)\n`;
-            if (shift.techCount > 1) {
-                breakdown += `  Technicians: ${shift.techs.join(', ')}\n`;
+        
+        // Group by date to get proper day counting
+        const shiftsByDate = new Map();
+        aggregatedShifts.forEach(shift => {
+            if (!shiftsByDate.has(shift.date)) {
+                shiftsByDate.set(shift.date, []);
             }
+            shiftsByDate.get(shift.date).push(shift);
+        });
+        
+        let dayNumber = 1;
+        shiftsByDate.forEach((dayShifts, date) => {
+            const formattedDate = getFormattedDate(date);
+            breakdown += `Day ${dayNumber} - ${formattedDate}:\n`;
+            breakdown += `${'='.repeat(40)}\n`;
+            
+            dayShifts.forEach((shift: any, shiftIndex: number) => {
+                const { breakdown: b } = calculateShiftBreakdown(shift);
+                const shiftLabel = dayShifts.length > 1 ? `Shift ${shiftIndex + 1}` : 'Shift';
+                
+                breakdown += `\n${shiftLabel}:\n`;
+                breakdown += `  Time: ${shift.startTime} - ${shift.finishTime}\n`;
+                breakdown += `  Day Type: ${shift.dayType}${shift.isNightShift ? ' (Night Shift)' : ''}\n`;
+                breakdown += `  Technicians: ${shift.techCount > 1 ? `${shift.techCount}x (${shift.techs.join(', ')})` : shift.tech}\n`;
+                breakdown += `\n  Hours Breakdown:\n`;
+                breakdown += `    Travel In NT: ${b.travelInNT.toFixed(2)}h | OT: ${b.travelInOT.toFixed(2)}h\n`;
+                breakdown += `    Site NT: ${b.siteNT.toFixed(2)}h | OT: ${b.siteOT.toFixed(2)}h\n`;
+                breakdown += `    Travel Out NT: ${b.travelOutNT.toFixed(2)}h | OT: ${b.travelOutOT.toFixed(2)}h\n`;
+                breakdown += `    Total Hours: ${b.totalHours.toFixed(2)}h (Site: ${b.siteHours.toFixed(2)}h)\n`;
+                
+                if (shift.vehicle) breakdown += `    Vehicle: Yes\n`;
+                if (shift.perDiem) breakdown += `    Per Diem: Yes\n`;
+            });
+            
             breakdown += `\n`;
+            dayNumber++;
         });
 
         return breakdown;
@@ -158,6 +176,39 @@ export default function Summary({ quote }: SummaryProps) {
     // Calculate individual allowances
     const vehicleCount = shifts.filter(s => s.vehicle).length;
     const perDiemCount = shifts.filter(s => s.perDiem).length;
+
+    // 1. HELPER FUNCTIONS
+    const addInternalExpense = () => {
+        const newExpense = { id: crypto.randomUUID(), description: '', cost: 0 };
+        const newExpenses = [...(quote.internalExpenses || []), newExpense];
+        quote.setInternalExpenses(newExpenses); 
+    };
+
+    const updateInternalExpense = (id: string, field: any, value: any) => {
+        const newExpenses = (quote.internalExpenses || []).map(e => 
+            e.id === id ? { ...e, [field]: value } : e
+        );
+        quote.setInternalExpenses(newExpenses);
+    };
+
+    const removeInternalExpense = (id: string) => {
+        const newExpenses = (quote.internalExpenses || []).filter(e => e.id !== id);
+        quote.setInternalExpenses(newExpenses);
+    };
+
+    // 2. CALCULATIONS
+    // Revenue is now the Total Invoice Amount
+    const totalRevenue = totalCost; 
+
+    // Costs
+    const totalLaborHours = totalNTHrs + totalOTHrs;
+    const internalLaborCost = totalLaborHours * (rates.costOfLabour || 0);
+    const totalInternalExpenses = (quote.internalExpenses || []).reduce((acc, e) => acc + (e.cost || 0), 0);
+    
+    // Profit
+    const totalInternalCost = internalLaborCost + totalInternalExpenses;
+    const grossProfit = totalRevenue - totalInternalCost;
+    const grossMargin = totalRevenue > 0 ? (grossProfit / totalRevenue) * 100 : 0;
 
     return (
         <div className="space-y-6">
@@ -269,6 +320,127 @@ export default function Summary({ quote }: SummaryProps) {
                         <div className="flex justify-between pt-4 text-xl font-bold text-slate-100">
                             <span>Grand Total</span>
                             <span>{formatMoney(totalCost)}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="bg-gray-800 p-6 rounded-lg shadow-sm border border-amber-600/50 mt-6 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 bg-amber-900/40 text-amber-500 text-xs px-3 py-1 rounded-bl border-b border-l border-amber-900/50 font-medium tracking-wider">
+                        INTERNAL MARGIN ANALYSIS
+                    </div>
+                    
+                    <h2 className="text-xl font-bold uppercase text-slate-100 tracking-wider mb-6 flex items-center gap-2">
+                        <span className="text-amber-500"><TrendingUp size={20}/></span> Job Profitability
+                    </h2>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        {/* LEFT: Revenue & Labor */}
+                        <div className="space-y-6">
+                            <div>
+                                <p className="text-xs text-slate-400 uppercase font-semibold mb-1">Total Job Revenue</p>
+                                <p className="text-2xl font-mono text-slate-100">{formatMoney(totalRevenue)}</p>
+                                <p className="text-[10px] text-slate-500">Includes all billables (Labor, Travel, Extras)</p>
+                            </div>
+
+                            <div className="p-4 bg-gray-900/30 rounded border border-gray-700">
+                                <p className="text-xs text-slate-400 uppercase font-semibold mb-2">Internal Labor Cost</p>
+                                <div className="flex justify-between items-end">
+                                    <div>
+                                        <p className="text-lg font-mono text-red-400">-{formatMoney(internalLaborCost)}</p>
+                                        <p className="text-[10px] text-slate-500">
+                                            {totalLaborHours.toFixed(2)} hrs @ {formatMoney(rates.costOfLabour)}/hr
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* RIGHT: Variable Internal Expenses */}
+                        <div className="bg-gray-900/30 rounded border border-gray-700 p-4 flex flex-col h-full">
+                            <div className="flex justify-between items-center mb-3">
+                                <p className="text-xs text-slate-400 uppercase font-semibold">Additional Internal Costs</p>
+                                <button 
+                                    onClick={addInternalExpense}
+                                    className="text-xs flex items-center gap-1 bg-gray-700 hover:bg-gray-600 text-slate-200 px-2 py-1 rounded transition-colors"
+                                >
+                                    <Plus size={12} /> Add Cost
+                                </button>
+                            </div>
+
+                            <div className="flex-1 space-y-2 overflow-y-auto max-h-48 custom-scrollbar">
+                                {(quote.internalExpenses || []).length === 0 && (
+                                    <p className="text-sm text-slate-600 italic py-2 text-center">No extra internal costs added.</p>
+                                )}
+                                
+                                {(quote.internalExpenses || []).map((item) => (
+                                    <div key={item.id} className="flex gap-2 items-center">
+                                        <input 
+                                            type="text" 
+                                            placeholder="Description (e.g. Fuel, Flights)"
+                                            className="flex-1 bg-gray-800 border border-gray-600 rounded text-xs p-1.5 text-slate-200 focus:border-amber-500 outline-none"
+                                            value={item.description}
+                                            onChange={(e) => updateInternalExpense(item.id, 'description', e.target.value)}
+                                        />
+                                        <div className="relative w-24">
+                                            <span className="absolute left-2 top-1.5 text-slate-500 text-xs">$</span>
+                                            <input 
+                                                type="number" 
+                                                className="w-full bg-gray-800 border border-gray-600 rounded text-xs p-1.5 pl-5 text-right text-red-300 focus:border-amber-500 outline-none"
+                                                value={item.cost}
+                                                onChange={(e) => updateInternalExpense(item.id, 'cost', parseFloat(e.target.value) || 0)}
+                                            />
+                                        </div>
+                                        <button 
+                                            onClick={() => removeInternalExpense(item.id)}
+                                            className="text-slate-500 hover:text-red-400"
+                                        >
+                                            <X size={14} />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                            
+                            <div className="mt-3 pt-3 border-t border-gray-700">
+                                <div className="flex justify-between items-center">
+                                    <span className="text-xs text-slate-500 italic">
+                                        *Note: Est. Fuel/Wear based on annual avg.
+                                    </span>
+                                    <span className="text-sm font-mono text-red-400 font-bold">
+                                        -{formatMoney(totalInternalExpenses)}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* BOTTOM: Final Results */}
+                    <div className="border-t border-gray-700 mt-6 pt-4 flex flex-col md:flex-row justify-between items-end gap-4">
+                        <div>
+                            <p className="text-xs text-slate-400 uppercase font-semibold">Net Profit</p>
+                            <div className={`text-3xl font-bold ${grossProfit >= 0 ? 'text-emerald-400' : 'text-red-500'}`}>
+                                {formatMoney(grossProfit)}
+                            </div>
+                        </div>
+                        
+                        <div className="flex flex-col items-end">
+                            <p className="text-xs text-slate-400 uppercase font-semibold">Profit Margin</p>
+                            <div className="flex items-baseline gap-2">
+                                <span className={`text-4xl font-black ${
+                                    grossMargin >= 30 ? 'text-emerald-400' : 
+                                    grossMargin > 15 ? 'text-amber-400' : 'text-red-500'
+                                }`}>
+                                    {grossMargin.toFixed(1)}%
+                                </span>
+                            </div>
+                            <div className="w-32 h-1.5 bg-gray-700 rounded-full mt-2 overflow-hidden">
+                                <div 
+                                    className={`h-full rounded-full ${
+                                        grossMargin >= 30 ? 'bg-emerald-500' : 
+                                        grossMargin > 15 ? 'bg-amber-500' : 'bg-red-500'
+                                    }`}
+                                    style={{ width: `${Math.max(0, Math.min(100, grossMargin))}%` }}
+                                ></div>
+                            </div>
                         </div>
                     </div>
                 </div>

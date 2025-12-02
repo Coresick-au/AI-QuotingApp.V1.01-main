@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { Rates, JobDetails, Shift, ExtraItem, Quote, Customer, Status } from '../types';
+import type { Rates, JobDetails, Shift, ExtraItem, Quote, Customer, Status, InternalExpense } from '../types';
 import { calculateShiftBreakdown as calculateLogic } from '../logic';
 
 
@@ -72,6 +72,7 @@ export function useQuote() {
     const [jobDetails, setJobDetails] = useState<JobDetails>(DEFAULT_JOB_DETAILS);
     const [shifts, setShifts] = useState<Shift[]>(DEFAULT_SHIFTS);
     const [extras, setExtras] = useState<ExtraItem[]>([{ id: 1, description: 'Accommodation', cost: 0 }]);
+    const [internalExpenses, setInternalExpenses] = useState<InternalExpense[]>([]);
 
     // Load from local storage on mount
     useEffect(() => {
@@ -143,10 +144,10 @@ export function useQuote() {
 
         setSavedQuotes(prev => prev.map(q =>
             q.id === activeQuoteId
-                ? { ...q, status, rates, jobDetails, shifts, extras, lastModified: Date.now() }
+                ? { ...q, status, rates, jobDetails, shifts, extras, internalExpenses, lastModified: Date.now() }
                 : q
         ));
-    }, [status, rates, jobDetails, shifts, extras, activeQuoteId, isLoaded]);
+    }, [status, rates, jobDetails, shifts, extras, internalExpenses, activeQuoteId, isLoaded]);
 
     const createNewQuote = () => {
         const newId = crypto.randomUUID();
@@ -166,7 +167,8 @@ export function useQuote() {
             rates: savedDefaultRates, // Use saved defaults for new quotes
             jobDetails: DEFAULT_JOB_DETAILS,
             shifts: DEFAULT_SHIFTS,
-            extras: [{ id: 1, description: 'Accommodation', cost: 0 }]
+            extras: [{ id: 1, description: 'Accommodation', cost: 0 }],
+            internalExpenses: []
         };
         setSavedQuotes([...savedQuotes, newQuote]);
         loadQuote(newId, newQuote);
@@ -182,6 +184,7 @@ export function useQuote() {
         setJobDetails(quote.jobDetails);
         setShifts(quote.shifts);
         setExtras(quote.extras);
+        setInternalExpenses(quote.internalExpenses || []);
     };
 
     const deleteQuote = (id: string) => {
@@ -420,6 +423,8 @@ export function useQuote() {
         addExtra,
         updateExtra,
         removeExtra,
+        internalExpenses,
+        setInternalExpenses,
         renameTechnician,
 
         // Calculations
