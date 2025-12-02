@@ -14,7 +14,7 @@ export default function Extras({ extras, isLocked, addExtra, updateExtra, remove
     return (
         <div className="bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-700">
             <div className="flex justify-between items-center mb-4">
-                <h2 className="text-lg font-semibold text-slate-200">Extras & Expenses</h2>
+                <h2 className="text-xl font-bold uppercase text-slate-100 tracking-wider">Extras & Expenses</h2>
                 {!isLocked && (
                     <button
                         onClick={addExtra}

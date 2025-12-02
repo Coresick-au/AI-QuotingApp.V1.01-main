@@ -9,10 +9,11 @@ interface JobDetailsProps {
     savedCustomers: Customer[];
     setRates: (rates: Rates) => void;
     renameTechnician: (index: number, newName: string) => void;
+    highlightMissingFields?: boolean;
 }
 
 export default function JobDetails({
-    jobDetails, setJobDetails, isLocked, savedCustomers, setRates, renameTechnician
+    jobDetails, setJobDetails, isLocked, savedCustomers, setRates, renameTechnician, highlightMissingFields
 }: JobDetailsProps) {
 
     const handleCustomerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -47,7 +48,7 @@ export default function JobDetails({
     return (
         <div className="bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-700">
             <div className="flex justify-between items-center mb-4">
-                <h2 className="text-lg font-semibold text-slate-200">Job Details</h2>
+                <h2 className="text-xl font-bold uppercase text-slate-100 tracking-wider">Job Details</h2>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
@@ -62,7 +63,7 @@ export default function JobDetails({
                         disabled={isLocked}
                         value={jobDetails.customer}
                         onChange={handleCustomerChange}
-                        className={`w-full p-2 border border-gray-600 rounded bg-gray-700 text-slate-100 focus:ring-2 focus:ring-primary-500 outline-none ${isLocked ? 'bg-gray-600 opacity-50 text-slate-400' : ''}`}
+                        className={`w-full p-2 border rounded bg-gray-700 text-slate-100 focus:ring-2 focus:ring-primary-500 outline-none ${isLocked ? 'bg-gray-600 opacity-50 text-slate-400' : ''} ${highlightMissingFields && !jobDetails.customer ? 'border-red-500 ring-1 ring-red-500' : 'border-gray-600'}`}
                         placeholder="Select or type customer..."
                     />
                     <datalist id="customer-list">

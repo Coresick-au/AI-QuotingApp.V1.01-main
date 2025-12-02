@@ -1,4 +1,4 @@
-
+import { useState } from 'react';
 import { Save, Lock, FileCheck, Unlock, ArrowLeft } from 'lucide-react';
 import JobDetails from './JobDetails';
 import Timesheet from './Timesheet';
@@ -20,8 +20,13 @@ export default function QuoteBuilder({ quote }: QuoteBuilderProps) {
         savedCustomers, setRates, renameTechnician
     } = quote;
 
+    const [highlightMissingFields, setHighlightMissingFields] = useState(false);
+
     const saveQuoteToSystem = () => {
         if (!jobDetails.customer) {
+            setHighlightMissingFields(true);
+            // Clear highlight after 3 seconds
+            setTimeout(() => setHighlightMissingFields(false), 3000);
             alert("Please enter Customer Name before saving.");
             return;
         }
@@ -62,7 +67,7 @@ export default function QuoteBuilder({ quote }: QuoteBuilderProps) {
                                 className="border border-gray-600 rounded px-3 py-1.5 text-sm bg-gray-800 text-slate-100 hover:border-primary-500 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none"
                             >
                                 {savedQuotes.map((q) => (
-                                    <option key={q.id} value={q.id}>
+                                    <option key={q.id} value={q.id} className="bg-gray-800 text-slate-100">
                                         {q.jobDetails.customer || 'Untitled'} - {q.jobDetails.jobNo || 'No Job #'} ({q.status})
                                     </option>
                                 ))}
@@ -132,6 +137,7 @@ export default function QuoteBuilder({ quote }: QuoteBuilderProps) {
                 savedCustomers={savedCustomers}
                 setRates={setRates}
                 renameTechnician={renameTechnician}
+                highlightMissingFields={highlightMissingFields}
             />
 
             <Timesheet

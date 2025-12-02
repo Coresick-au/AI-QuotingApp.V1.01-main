@@ -1,4 +1,3 @@
-
 import { Copy, Eye, ExternalLink, X } from 'lucide-react';
 import { useState } from 'react';
 import { useQuote } from '../hooks/useQuote';
@@ -9,7 +8,7 @@ interface SummaryProps {
 
 export default function Summary({ quote }: SummaryProps) {
     const {
-        shifts, extras, rates, calculateShiftBreakdown, totalCost, jobDetails, setJobDetails, status,
+        shifts, extras, rates, calculateShiftBreakdown, totalCost, jobDetails, status,
         reportingCost, travelChargeCost, isLocked, totalNTHrs, totalOTHrs
     } = quote;
 
@@ -49,6 +48,16 @@ export default function Summary({ quote }: SummaryProps) {
     };
 
     const formatMoney = (amount: number) => new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD' }).format(amount);
+
+    const getFormattedDate = (dateStr: string) => {
+        if (!dateStr) return '';
+        const date = new Date(dateStr);
+        if (Number.isNaN(date.getTime())) return dateStr;
+        const weekday = date.toLocaleDateString('en-AU', { weekday: 'short' });
+        const day = date.getDate().toString().padStart(2, '0');
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        return `${weekday} ${day}/${month}`;
+    };
 
     const generateInvoiceString = () => {
         // Calculate Totals - Unified labor costs
@@ -121,8 +130,10 @@ export default function Summary({ quote }: SummaryProps) {
 
         aggregatedShifts.forEach((shift, index) => {
             const { breakdown: b } = calculateShiftBreakdown(shift);
-            breakdown += `Shift ${index + 1}:\n`;
-            breakdown += `Date: ${shift.date} | ${shift.techCount > 1 ? `Techs x ${shift.techCount}` : `Tech: ${shift.tech}`}\n`;
+            const shiftLabelId = shift.id ?? index + 1;
+            const formattedDate = getFormattedDate(shift.date);
+            breakdown += `Shift ${shiftLabelId} - Day ${index + 1}:\n`;
+            breakdown += `Date: ${formattedDate} | ${shift.techCount > 1 ? `Techs x ${shift.techCount}` : `Tech: ${shift.tech}`}\n`;
             breakdown += `Time: ${shift.startTime} - ${shift.finishTime}\n`;
             breakdown += `Day Type: ${shift.dayType}${shift.isNightShift ? ' (Night Shift)' : ''}\n`;
             breakdown += `\nHours Breakdown:\n`;
@@ -182,7 +193,7 @@ export default function Summary({ quote }: SummaryProps) {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
                 <div className="bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-700 h-fit">
-                    <h2 className="text-lg font-semibold mb-4 text-slate-200">Financial Summary</h2>
+                    <h2 className="text-xl font-bold uppercase text-slate-100 tracking-wider mb-4">Financial Summary</h2>
 
                     <div className="space-y-3">
                         <div className="flex justify-between py-2 border-b border-gray-700">
@@ -266,7 +277,7 @@ export default function Summary({ quote }: SummaryProps) {
                     {/* Admin Communication Section */}
                     <div className="bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-700">
                         <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-lg font-semibold text-slate-200">Admin Communication</h2>
+                            <h2 className="text-xl font-bold uppercase text-slate-100 tracking-wider">Admin Communication</h2>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -313,7 +324,7 @@ export default function Summary({ quote }: SummaryProps) {
                             </label>
                             <textarea
                                 value={jobDetails.adminComments || ''}
-                                onChange={(e) => setJobDetails({ ...jobDetails, adminComments: e.target.value })}
+                                onChange={(e) => quote.setJobDetails({ ...jobDetails, adminComments: e.target.value })}
                                 disabled={isLocked}
                                 className={`w-full p-2 border border-gray-600 rounded bg-gray-700 text-slate-100 focus:ring-2 focus:ring-primary-500 outline-none h-20 ${isLocked ? 'bg-gray-600 opacity-50' : ''}`}
                                 placeholder="Additional notes for admin..."
@@ -354,7 +365,7 @@ export default function Summary({ quote }: SummaryProps) {
                             <span className="text-sm font-medium text-slate-300">Total to Invoice: {formatMoney(totalCost)}</span>
                             {(jobDetails.quotedAmount || 0) > 0 && (
                                 <span className={`text-sm font-bold ${totalCost > (jobDetails.quotedAmount || 0) ? 'text-red-400' : 'text-green-400'}`}>
-                                    Difference: {formatMoney(totalCost - (jobDetails.quotedAmount || 0))}
+                                    Difference vs. Original Quote Snapshot: {formatMoney(totalCost - (jobDetails.quotedAmount || 0))}
                                     {Math.abs(totalCost - (jobDetails.quotedAmount || 0)) > 0.01 ? (totalCost > (jobDetails.quotedAmount || 0) ? ' (Higher)' : ' (Lower)') : ''}
                                 </span>
                             )}
@@ -363,7 +374,7 @@ export default function Summary({ quote }: SummaryProps) {
 
                     <div className="bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-700">
                         <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-lg font-semibold text-slate-200">Invoice Copy</h2>
+                            <h2 className="text-xl font-bold uppercase text-slate-100 tracking-wider">Invoice Copy</h2>
                             <div className="flex gap-2">
                                 <button
                                     onClick={() => setShowBreakdownModal(true)}

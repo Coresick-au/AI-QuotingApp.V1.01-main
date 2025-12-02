@@ -286,7 +286,7 @@ export default function Dashboard({
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="bg-gray-700 p-4 rounded-lg border border-gray-600">
-                                <h3 className="font-semibold text-slate-200 mb-3 flex items-center gap-2">
+                                <h3 className="text-xl font-bold uppercase text-slate-100 tracking-wider mb-3 flex items-center gap-2">
                                     <Download size={18} /> Export Data
                                 </h3>
                                 <p className="text-sm text-slate-400 mb-4">
@@ -313,7 +313,7 @@ export default function Dashboard({
                             </div>
                             
                             <div className="bg-gray-700 p-4 rounded-lg border border-gray-600">
-                                <h3 className="font-semibold text-slate-200 mb-3 flex items-center gap-2">
+                                <h3 className="text-xl font-bold uppercase text-slate-100 tracking-wider mb-3 flex items-center gap-2">
                                     <Upload size={18} /> Import Data
                                 </h3>
                                 <p className="text-sm text-slate-400 mb-4">

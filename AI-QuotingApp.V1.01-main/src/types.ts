@@ -14,6 +14,7 @@ export interface Rates {
     perDiem: number; // per night
     standardDayRate: number; // 12hrs
     weekendDayRate: number; // 12hrs
+    costOfLabour: number; // internal cost per hour for margin calculation
 }
 
 export interface Customer {

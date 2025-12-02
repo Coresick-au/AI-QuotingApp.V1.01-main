@@ -1,6 +1,6 @@
 
 import type { Rates } from '../types';
-import { Lock, Unlock, Calculator, PlusCircle, Save, RotateCcw } from 'lucide-react';
+import { Lock, Unlock, Calculator, PlusCircle, Save, RotateCcw, TrendingUp } from 'lucide-react';
 import { useState } from 'react';
 
 interface RatesConfigProps {
@@ -16,6 +16,9 @@ export default function RatesConfig({ rates, setRates, saveAsDefaults, resetToDe
     const [calcKm, setCalcKm] = useState<number>(0);
     const [calcHours, setCalcHours] = useState<number>(0);
     const [hasBeenUnlocked, setHasBeenUnlocked] = useState(false);
+    
+    // Profit Target State
+    const [targetMargin, setTargetMargin] = useState<number>(0);
 
     const handleUnlock = () => {
         // Only show confirmation if this was manually locked before (not initial state)
@@ -69,7 +72,7 @@ export default function RatesConfig({ rates, setRates, saveAsDefaults, resetToDe
         <div className="bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-700">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                 <div>
-                    <h2 className="text-lg font-semibold text-slate-200">Current Quote Rates Configuration</h2>
+                    <h2 className="text-xl font-bold uppercase text-slate-100 tracking-wider">Current Quote Rates Configuration</h2>
                     <p className="text-sm text-slate-400 mt-1">Rates configured here apply exclusively to the current active quote and will not modify customer default profiles.</p>
                 </div>
 
@@ -200,89 +203,142 @@ export default function RatesConfig({ rates, setRates, saveAsDefaults, resetToDe
                             <span className="text-slate-400">/hr</span>
                         </div>
                     </div>
+
+                    <div>
+                        <label className="block text-sm text-slate-300 mb-1">Internal Cost of Labor (Per Hr)</label>
+                        <div className="flex items-center gap-2">
+                            <span className="text-slate-400">$</span>
+                            <input
+                                disabled={isLocked}
+                                type="number"
+                                step="1"
+                                value={rates.costOfLabour}
+                                onChange={(e) => setRates({ ...rates, costOfLabour: parseFloat(e.target.value) || 0 })}
+                                className={`border border-gray-600 rounded p-2 w-full bg-gray-700 text-slate-100 ${isLocked ? 'bg-gray-600 opacity-50 text-slate-400' : ''}`}
+                            />
+                            <span className="text-slate-400">/hr</span>
+                        </div>
+                        <p className="text-xs text-slate-500 mt-1">Internal cost for margin calculation (not billed to customer)</p>
+                    </div>
                 </div>
 
                 {/* Travel & Allowances */}
-                <div className="space-y-4">
-                    <h3 className="font-semibold text-slate-200 text-sm uppercase tracking-wide border-b border-gray-600 pb-2">Allowances & Other</h3>
+                <div className="space-y-6">
+                    <div className="space-y-4">
+                        <h3 className="font-semibold text-slate-200 text-sm uppercase tracking-wide border-b border-gray-600 pb-2">Allowances & Other</h3>
 
-                    {/* Moved Travel Rate and Travel Charge to Calculator section below */}
+                        {/* Moved Travel Rate and Travel Charge to Calculator section below */}
 
-                    <div>
-                        <label className="block text-sm text-slate-300 mb-1">Travel Charge ex Brisbane</label>
-                        <div className="flex items-center gap-2">
-                            <span className="text-slate-400">$</span>
-                            <input
-                                disabled={isLocked}
-                                type="number"
-                                step="0.01"
-                                value={rates.travelChargeExBrisbane}
-                                onChange={(e) => setRates({ ...rates, travelChargeExBrisbane: parseFloat(e.target.value) || 0 })}
-                                className={`border border-gray-600 rounded p-2 w-full bg-gray-700 text-slate-100 ${isLocked ? 'bg-gray-600 opacity-50 text-slate-400' : ''}`}
-                                placeholder="Input Value"
-                            />
-                            <span className="text-slate-400">/tech</span>
+                        <div>
+                            <label className="block text-sm text-slate-300 mb-1">Travel Charge ex Brisbane</label>
+                            <div className="flex items-center gap-2">
+                                <span className="text-slate-400">$</span>
+                                <input
+                                    disabled={isLocked}
+                                    type="number"
+                                    step="0.01"
+                                    value={rates.travelChargeExBrisbane}
+                                    onChange={(e) => setRates({ ...rates, travelChargeExBrisbane: parseFloat(e.target.value) || 0 })}
+                                    className={`border border-gray-600 rounded p-2 w-full bg-gray-700 text-slate-100 ${isLocked ? 'bg-gray-600 opacity-50 text-slate-400' : ''}`}
+                                    placeholder="Input Value"
+                                />
+                                <span className="text-slate-400">/tech</span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm text-slate-300 mb-1">Site Vehicle</label>
+                            <div className="flex items-center gap-2">
+                                <span className="text-slate-400">$</span>
+                                <input
+                                    disabled={isLocked}
+                                    type="number"
+                                    step="1"
+                                    value={rates.vehicle}
+                                    onChange={(e) => setRates({ ...rates, vehicle: parseFloat(e.target.value) || 0 })}
+                                    className={`border border-gray-600 rounded p-2 w-full bg-gray-700 text-slate-100 ${isLocked ? 'bg-gray-600 opacity-50 text-slate-400' : ''}`}
+                                />
+                                <span className="text-slate-400">/day</span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm text-slate-300 mb-1">Technician Overnight Allowance</label>
+                            <div className="flex items-center gap-2">
+                                <span className="text-slate-400">$</span>
+                                <input
+                                    disabled={isLocked}
+                                    type="number"
+                                    step="1"
+                                    value={rates.perDiem}
+                                    onChange={(e) => setRates({ ...rates, perDiem: parseFloat(e.target.value) || 0 })}
+                                    className={`border border-gray-600 rounded p-2 w-full bg-gray-700 text-slate-100 ${isLocked ? 'bg-gray-600 opacity-50 text-slate-400' : ''}`}
+                                />
+                                <span className="text-slate-400">/night</span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm text-slate-300 mb-1">Standard Day Rate (12hrs)</label>
+                            <div className="flex items-center gap-2">
+                                <span className="text-slate-400">$</span>
+                                <input
+                                    disabled
+                                    type="number"
+                                    value={(rates.siteNormal * 7.5) + (rates.siteOvertime * 4.5)}
+                                    className="border border-gray-600 rounded p-2 w-full bg-gray-600 text-slate-400 font-medium cursor-not-allowed"
+                                />
+                            </div>
+                            <p className="text-xs text-slate-500 mt-1">Calculated: (7.5h × Normal) + (4.5h × OT)</p>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm text-slate-300 mb-1">Weekend Day Rate (12hrs)</label>
+                            <div className="flex items-center gap-2">
+                                <span className="text-slate-400">$</span>
+                                <input
+                                    disabled
+                                    type="number"
+                                    value={rates.weekend * 12}
+                                    className="border border-gray-600 rounded p-2 w-full bg-gray-600 text-slate-400 font-medium cursor-not-allowed"
+                                />
+                            </div>
+                            <p className="text-xs text-slate-500 mt-1">Calculated: 12h × Weekend Rate</p>
                         </div>
                     </div>
 
-                    <div>
-                        <label className="block text-sm text-slate-300 mb-1">Site Vehicle</label>
-                        <div className="flex items-center gap-2">
-                            <span className="text-slate-400">$</span>
-                            <input
-                                disabled={isLocked}
-                                type="number"
-                                step="1"
-                                value={rates.vehicle}
-                                onChange={(e) => setRates({ ...rates, vehicle: parseFloat(e.target.value) || 0 })}
-                                className={`border border-gray-600 rounded p-2 w-full bg-gray-700 text-slate-100 ${isLocked ? 'bg-gray-600 opacity-50 text-slate-400' : ''}`}
-                            />
-                            <span className="text-slate-400">/day</span>
+                    {/* Profit Target Calculator */}
+                    <div className="bg-gray-700/50 p-4 rounded-lg border border-gray-600">
+                        <h3 className="font-semibold text-slate-200 text-sm flex items-center gap-2 mb-3">
+                            <TrendingUp size={16} /> Profit Target
+                        </h3>
+                        <div className="flex items-end gap-4">
+                            <div>
+                                <label className="block text-xs text-slate-400 mb-1">Target Margin %</label>
+                                <div className="flex items-center gap-2">
+                                    <input
+                                        type="number"
+                                        placeholder="0"
+                                        value={targetMargin || ''}
+                                        onChange={(e) => setTargetMargin(parseFloat(e.target.value) || 0)}
+                                        className="w-20 p-2 border border-gray-600 rounded bg-gray-700 text-slate-100 outline-none focus:border-primary-500"
+                                    />
+                                    <span className="text-slate-400 text-sm">%</span>
+                                </div>
+                            </div>
+                            <div className="pb-2 text-slate-500">→</div>
+                            <div>
+                                <label className="block text-xs text-slate-400 mb-1">Required Multiplier</label>
+                                <div className="py-2 px-3 bg-gray-800 rounded border border-gray-600 text-slate-100 font-mono min-w-[80px] text-center">
+                                    {targetMargin > 0 && targetMargin < 100 
+                                        ? (1 / (1 - (targetMargin / 100))).toFixed(3) + 'x'
+                                        : '-'}
+                                </div>
+                            </div>
                         </div>
-                    </div>
-
-                    <div>
-                        <label className="block text-sm text-slate-300 mb-1">Technician Overnight Allowance</label>
-                        <div className="flex items-center gap-2">
-                            <span className="text-slate-400">$</span>
-                            <input
-                                disabled={isLocked}
-                                type="number"
-                                step="1"
-                                value={rates.perDiem}
-                                onChange={(e) => setRates({ ...rates, perDiem: parseFloat(e.target.value) || 0 })}
-                                className={`border border-gray-600 rounded p-2 w-full bg-gray-700 text-slate-100 ${isLocked ? 'bg-gray-600 opacity-50 text-slate-400' : ''}`}
-                            />
-                            <span className="text-slate-400">/night</span>
-                        </div>
-                    </div>
-
-                    <div>
-                        <label className="block text-sm text-slate-300 mb-1">Standard Day Rate (12hrs)</label>
-                        <div className="flex items-center gap-2">
-                            <span className="text-slate-400">$</span>
-                            <input
-                                disabled
-                                type="number"
-                                value={(rates.siteNormal * 7.5) + (rates.siteOvertime * 4.5)}
-                                className="border border-gray-600 rounded p-2 w-full bg-gray-600 text-slate-400 font-medium cursor-not-allowed"
-                            />
-                        </div>
-                        <p className="text-xs text-slate-500 mt-1">Calculated: (7.5h × Normal) + (4.5h × OT)</p>
-                    </div>
-
-                    <div>
-                        <label className="block text-sm text-slate-300 mb-1">Weekend Day Rate (12hrs)</label>
-                        <div className="flex items-center gap-2">
-                            <span className="text-slate-400">$</span>
-                            <input
-                                disabled
-                                type="number"
-                                value={rates.weekend * 12}
-                                className="border border-gray-600 rounded p-2 w-full bg-gray-600 text-slate-400 font-medium cursor-not-allowed"
-                            />
-                        </div>
-                        <p className="text-xs text-slate-500 mt-1">Calculated: 12h × Weekend Rate</p>
+                        <p className="text-xs text-slate-500 mt-2">
+                            Multiplier = 1 / (1 - Margin%). Example: 20% Margin requires 1.25x markup.
+                        </p>
                     </div>
                 </div>
             </div>

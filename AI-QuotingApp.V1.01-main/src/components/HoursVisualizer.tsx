@@ -64,7 +64,7 @@ export default function HoursVisualizer({ shifts, calculateShiftBreakdown }: Hou
     if (shifts.length === 0) {
         return (
             <div className="bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-700">
-                <h2 className="text-lg font-semibold text-slate-200 mb-4">Hours Visualization</h2>
+                <h2 className="text-xl font-bold uppercase text-slate-100 tracking-wider mb-4">Hours Visualization</h2>
                 <div className="flex items-center justify-center h-64 text-slate-400">
                     <p>No shifts to visualize. Add shifts in the Timesheet to see hours breakdown.</p>
                 </div>
@@ -75,7 +75,7 @@ export default function HoursVisualizer({ shifts, calculateShiftBreakdown }: Hou
     return (
         <div className="bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-700">
             <div className="flex justify-between items-center mb-6">
-                <h2 className="text-lg font-semibold text-slate-200">Hours Visualization</h2>
+                <h2 className="text-xl font-bold uppercase text-slate-100 tracking-wider">Hours Visualization</h2>
                 <div className="text-sm text-slate-400">
                     Total: <span className="font-semibold text-slate-200">
                         {(totals.normalHours + totals.overtimeHours).toFixed(2)}h

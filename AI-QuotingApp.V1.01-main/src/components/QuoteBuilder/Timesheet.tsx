@@ -27,7 +27,7 @@ export default function Timesheet({
         <div className="bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-700 overflow-x-auto">
             <div className="flex justify-between items-center mb-4">
                 <div>
-                    <h2 className="text-lg font-semibold text-slate-200">Timesheet & Hours</h2>
+                    <h2 className="text-xl font-bold uppercase text-slate-100 tracking-wider">Timesheet & Hours</h2>
                     <p className="text-xs text-slate-400">Enter Start/Finish + Travel. Site hours are calculated automatically.</p>
                 </div>
                 {!isLocked && (

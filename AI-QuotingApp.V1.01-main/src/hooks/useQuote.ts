@@ -3,20 +3,21 @@ import type { Rates, JobDetails, Shift, ExtraItem, Quote, Customer, Status } fro
 import { calculateShiftBreakdown as calculateLogic } from '../logic';
 
 
-const DEFAULT_RATES: Rates = {
-    siteNormal: 160,
-    siteOvertime: 190,
-    weekend: 210,
-    publicHoliday: 235,
-    officeReporting: 160,
-    travel: 120,
-    travelOvertime: 120,
-    travelCharge: 1.30,
-    travelChargeExBrisbane: 0,
-    vehicle: 120,
-    perDiem: 90,
-    standardDayRate: 2040,
-    weekendDayRate: 2520
+export const DEFAULT_RATES: Rates = {
+    siteNormal: 150,
+    siteOvertime: 225,
+    weekend: 220,
+    publicHoliday: 300,
+    officeReporting: 85,
+    travel: 75,
+    travelOvertime: 112,
+    travelCharge: 1.10,
+    travelChargeExBrisbane: 1.32,
+    vehicle: 45,
+    perDiem: 45,
+    standardDayRate: 1800,
+    weekendDayRate: 2640,
+    costOfLabour: 100,
 };
 
 const DEFAULT_JOB_DETAILS: JobDetails = {
