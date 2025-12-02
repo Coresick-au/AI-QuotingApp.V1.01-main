@@ -26,7 +26,8 @@ const DEFAULT_RATES: Rates = {
     vehicle: 120,
     perDiem: 90,
     standardDayRate: 2040,
-    weekendDayRate: 2520
+    weekendDayRate: 2520,
+    costOfLabour: 100
 };
 
 export default function CustomerDashboard({
