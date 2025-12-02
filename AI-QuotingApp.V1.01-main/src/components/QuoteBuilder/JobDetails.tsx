@@ -46,9 +46,9 @@ export default function JobDetails({
     };
 
     return (
-        <div className="bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-700">
+        <div className="bg-bg-secondary p-6 rounded-lg shadow-sm border border-slate-700">
             <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold uppercase text-slate-100 tracking-wider">Job Details</h2>
+                <h2 className="text-xl font-bold uppercase text-slate-200 tracking-wider">Job Details</h2>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
@@ -63,7 +63,7 @@ export default function JobDetails({
                         disabled={isLocked}
                         value={jobDetails.customer}
                         onChange={handleCustomerChange}
-                        className={`w-full p-2 border rounded bg-gray-700 text-slate-100 focus:ring-2 focus:ring-primary-500 outline-none ${isLocked ? 'bg-gray-600 opacity-50 text-slate-400' : ''} ${highlightMissingFields && !jobDetails.customer ? 'border-red-500 ring-1 ring-red-500' : 'border-gray-600'}`}
+                        className={`w-full p-2 border rounded-lg bg-bg-tertiary text-slate-200 focus:ring-2 focus:ring-accent-primary outline-none transition-all ${isLocked ? 'bg-bg-tertiary/50 opacity-50 text-slate-400' : ''} ${highlightMissingFields && !jobDetails.customer ? 'border-danger ring-1 ring-danger' : 'border-slate-700 hover:border-accent-primary'}`}
                         placeholder="Select or type customer..."
                     />
                     <datalist id="customer-list">
@@ -72,8 +72,6 @@ export default function JobDetails({
                         ))}
                     </datalist>
                 </div>
-
-
 
                 <div>
                     <label className="block text-sm font-medium text-slate-300 mb-1 flex items-center gap-2">
@@ -84,7 +82,7 @@ export default function JobDetails({
                         disabled={isLocked}
                         value={jobDetails.location}
                         onChange={(e) => setJobDetails({ ...jobDetails, location: e.target.value })}
-                        className={`w-full p-2 border border-gray-600 rounded bg-gray-700 text-slate-100 focus:ring-2 focus:ring-primary-500 outline-none ${isLocked ? 'bg-gray-600 opacity-50 text-slate-400' : ''}`}
+                        className={`w-full p-2 border border-slate-700 rounded-lg bg-bg-tertiary text-slate-200 focus:ring-2 focus:ring-accent-primary outline-none transition-all hover:border-accent-primary ${isLocked ? 'bg-bg-tertiary/50 opacity-50 text-slate-400' : ''}`}
                         placeholder="Site Location"
                     />
                 </div>
@@ -102,13 +100,13 @@ export default function JobDetails({
                                 disabled={isLocked}
                                 value={tech}
                                 onChange={(e) => updateTechnician(index, e.target.value)}
-                                className={`p-2 border border-gray-600 rounded w-48 bg-gray-700 text-slate-100 focus:ring-2 focus:ring-primary-500 outline-none ${isLocked ? 'bg-gray-600 opacity-50 text-slate-400' : ''}`}
+                                className={`p-2 border border-slate-700 rounded-lg w-48 bg-bg-tertiary text-slate-200 focus:ring-2 focus:ring-accent-primary outline-none transition-all hover:border-accent-primary ${isLocked ? 'bg-bg-tertiary/50 opacity-50 text-slate-400' : ''}`}
                                 placeholder={`Tech ${index + 1}`}
                             />
                             {!isLocked && jobDetails.technicians.length > 1 && (
                                 <button
                                     onClick={() => removeTechnician(index)}
-                                    className="text-slate-400 hover:text-red-400"
+                                    className="text-slate-400 hover:text-danger transition-colors"
                                 >
                                     <X size={18} />
                                 </button>
@@ -118,7 +116,7 @@ export default function JobDetails({
                     {!isLocked && (
                         <button
                             onClick={addTechnician}
-                            className="flex items-center gap-1 text-primary-400 hover:text-primary-300 font-medium px-2 py-1 rounded hover:bg-primary-900/20"
+                            className="flex items-center gap-1 text-accent-primary hover:text-accent-hover font-medium px-3 py-2 rounded-lg hover:bg-accent-primary/10 transition-all border border-slate-700 hover:border-accent-primary hover:shadow-blue-glow"
                         >
                             <Plus size={16} /> Add Tech
                         </button>
@@ -129,14 +127,14 @@ export default function JobDetails({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
-                    <label className="block text-sm font-medium text-slate-600 mb-1">Reporting Time (Hours)</label>
+                    <label className="block text-sm font-medium text-slate-300 mb-1">Reporting Time (Hours)</label>
                     <input
                         type="number"
                         step="0.5"
                         disabled={isLocked}
                         value={jobDetails.reportingTime || 0}
                         onChange={(e) => setJobDetails({ ...jobDetails, reportingTime: parseFloat(e.target.value) || 0 })}
-                        className={`p-2 border border-gray-600 rounded w-full bg-gray-700 text-slate-100 ${isLocked ? 'bg-gray-600 opacity-50 text-slate-400' : ''}`}
+                        className={`p-2 border border-slate-700 rounded-lg w-full bg-bg-tertiary text-slate-200 focus:ring-2 focus:ring-accent-primary outline-none transition-all hover:border-accent-primary ${isLocked ? 'bg-bg-tertiary/50 opacity-50 text-slate-400' : ''}`}
                     />
                 </div>
 
@@ -148,7 +146,7 @@ export default function JobDetails({
                             disabled={isLocked}
                             checked={jobDetails.includeTravelCharge}
                             onChange={(e) => setJobDetails({ ...jobDetails, includeTravelCharge: e.target.checked })}
-                            className="w-4 h-4 accent-primary-600 rounded focus:ring-primary-500"
+                            className="w-4 h-4 accent-accent-primary rounded focus:ring-2 focus:ring-accent-primary"
                         />
                         <label htmlFor="includeTravelCharge" className="text-sm font-medium text-slate-300 select-none cursor-pointer">
                             Include Travel Charge?
@@ -165,7 +163,7 @@ export default function JobDetails({
                     disabled={isLocked}
                     value={jobDetails.description}
                     onChange={(e) => setJobDetails({ ...jobDetails, description: e.target.value })}
-                    className={`w-full p-3 border border-gray-600 rounded h-24 bg-gray-700 text-slate-100 focus:ring-2 focus:ring-primary-500 outline-none ${isLocked ? 'bg-gray-600 opacity-50 text-slate-400' : ''}`}
+                    className={`w-full p-3 border border-slate-700 rounded-lg h-24 bg-bg-tertiary text-slate-200 focus:ring-2 focus:ring-accent-primary outline-none transition-all hover:border-accent-primary resize-none ${isLocked ? 'bg-bg-tertiary/50 opacity-50 text-slate-400' : ''}`}
                     placeholder="Enter job description..."
                 />
             </div>

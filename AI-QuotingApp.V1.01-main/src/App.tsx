@@ -14,7 +14,7 @@ function App() {
 
   if (!quote.activeQuoteId) {
     return (
-      <Suspense fallback={<div className="min-h-screen bg-gray-900 flex items-center justify-center text-slate-400">Loading Dashboard...</div>}>
+      <Suspense fallback={<div className="min-h-screen bg-bg-primary flex items-center justify-center text-slate-200">Loading Dashboard...</div>}>
         <Dashboard
           savedQuotes={quote.savedQuotes}
           createNewQuote={quote.createNewQuote}

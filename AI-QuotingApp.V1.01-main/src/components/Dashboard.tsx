@@ -89,12 +89,12 @@ export default function Dashboard({
     };
 
     return (
-        <div className="min-h-screen bg-gray-900 p-6">
+        <div className="min-h-screen bg-bg-primary p-6">
             <div className="max-w-[95%] mx-auto">
                 {/* Header & Tabs */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
                     <div>
-                        <h1 className="text-3xl font-bold text-slate-100">Service Quoter</h1>
+                        <h1 className="text-3xl font-bold text-slate-200">Service Quote & Invoice Manager</h1>
                         <p className="text-slate-400 mt-1">Manage quotes, customers, and technicians</p>
                     </div>
 
@@ -294,10 +294,10 @@ export default function Dashboard({
                                 </p>
                                 <button
                                     onClick={handleBackup}
-                                    className={`w-full px-4 py-2 rounded transition-colors flex items-center justify-center gap-2 font-medium ${
+                                    className={`w-full px-4 py-2 rounded font-medium transition-colors flex items-center justify-center gap-2 ${
                                         backupSuccess 
-                                            ? 'bg-green-600 text-white' 
-                                            : 'bg-primary-600 text-white hover:bg-primary-700'
+                                            ? 'bg-success text-white' 
+                                            : 'bg-gray-600 text-white hover:bg-gray-500'
                                     }`}
                                 >
                                     {backupSuccess ? (
