@@ -1,6 +1,6 @@
 
-import { useState } from 'react';
-import { FileText, Plus, Trash2, FolderOpen, Users, Wrench } from 'lucide-react';
+import React, { useState } from 'react';
+import { FileText, Plus, Trash2, FolderOpen, Users, Download, Upload } from 'lucide-react';
 import type { Quote, Customer, Rates } from '../types';
 import CustomerDashboard from './CustomerDashboard';
 import TechnicianDashboard from './TechnicianDashboard';
@@ -19,16 +19,47 @@ interface DashboardProps {
     saveAsDefaults: (rates: Rates) => void;
     resetToDefaults: () => void;
     savedDefaultRates: Rates;
+    exportState: () => void;
+    importState: (fileContent: string) => boolean;
 }
 
 export default function Dashboard({
     savedQuotes, createNewQuote, loadQuote, deleteQuote,
     savedCustomers, saveCustomer, deleteCustomer,
     savedTechnicians, saveTechnician, deleteTechnician,
-    saveAsDefaults, resetToDefaults, savedDefaultRates
+    saveAsDefaults, resetToDefaults, savedDefaultRates, exportState, importState
 }: DashboardProps) {
-    const [view, setView] = useState<'quotes' | 'customers' | 'technicians'>('quotes');
+    const [view, setView] = useState<'quotes' | 'customers' | 'technicians' | 'backup'>('quotes');
     const [filterStatus, setFilterStatus] = useState<'all' | 'draft' | 'quoted' | 'invoice' | 'closed'>('all');
+    const [backupSuccess, setBackupSuccess] = useState(false);
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+    const handleBackup = () => {
+        exportState();
+        setBackupSuccess(true);
+        setTimeout(() => setBackupSuccess(false), 2000); // Reset after 2 seconds
+    };
+
+    const handleFileImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const content = e.target?.result as string;
+                const success = importState(content);
+                if (success) {
+                    alert('State imported successfully!');
+                } else {
+                    alert('Failed to import state. Please check the file format.');
+                }
+            };
+            reader.readAsText(file);
+        }
+        // Reset the file input
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+    };
 
     const handleDelete = (e: React.MouseEvent, id: string) => {
         e.stopPropagation();
@@ -59,6 +90,12 @@ export default function Dashboard({
                             className={`px-4 py-2 rounded-md font-medium flex items-center gap-2 transition-colors ${view === 'customers' ? 'bg-primary-600 text-white' : 'text-slate-400 hover:bg-gray-700'}`}
                         >
                             <Users size={18} /> Customers
+                        </button>
+                        <button
+                            onClick={() => setView('backup')}
+                            className={`px-4 py-2 rounded-md font-medium flex items-center gap-2 transition-colors ${view === 'backup' ? 'bg-primary-600 text-white' : 'text-slate-400 hover:bg-gray-700'}`}
+                        >
+                            <Download size={18} /> Backup & Restore
                         </button>
                     </div>
                 </div>
@@ -149,6 +186,70 @@ export default function Dashboard({
                         resetToDefaults={resetToDefaults}
                         savedDefaultRates={savedDefaultRates}
                     />
+                ) : view === 'backup' ? (
+                    <div className="bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-700">
+                        <div className="mb-6">
+                            <h2 className="text-xl font-semibold text-slate-200 mb-2">Backup & Restore</h2>
+                            <p className="text-sm text-slate-400">Save and restore your complete application data including quotes, customers, and default rates.</p>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="bg-gray-700 p-4 rounded-lg border border-gray-600">
+                                <h3 className="font-semibold text-slate-200 mb-3 flex items-center gap-2">
+                                    <Download size={18} /> Export Data
+                                </h3>
+                                <p className="text-sm text-slate-400 mb-4">
+                                    Download a complete backup of all your quotes, customers, and settings.
+                                </p>
+                                <button
+                                    onClick={handleBackup}
+                                    className={`w-full px-4 py-2 rounded transition-colors flex items-center justify-center gap-2 font-medium ${
+                                        backupSuccess 
+                                            ? 'bg-green-600 text-white' 
+                                            : 'bg-primary-600 text-white hover:bg-primary-700'
+                                    }`}
+                                >
+                                    {backupSuccess ? (
+                                        <>
+                                            <Download size={16} /> Backup Saved Successfully!
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Download size={16} /> Backup/Save State
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                            
+                            <div className="bg-gray-700 p-4 rounded-lg border border-gray-600">
+                                <h3 className="font-semibold text-slate-200 mb-3 flex items-center gap-2">
+                                    <Upload size={18} /> Import Data
+                                </h3>
+                                <p className="text-sm text-slate-400 mb-4">
+                                    Restore your data from a previously saved backup file.
+                                </p>
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept=".json"
+                                    onChange={handleFileImport}
+                                    className="hidden"
+                                />
+                                <button
+                                    onClick={() => fileInputRef.current?.click()}
+                                    className="w-full bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-500 transition-colors flex items-center justify-center gap-2 font-medium"
+                                >
+                                    <Upload size={16} /> Restore/Load State
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div className="mt-6 p-4 bg-amber-900/20 border border-amber-700 rounded-lg">
+                            <p className="text-sm text-amber-300">
+                                <strong>Warning:</strong> Importing data will overwrite all existing quotes, customers, and settings. Consider creating a backup before importing.
+                            </p>
+                        </div>
+                    </div>
                 ) : (
                     <TechnicianDashboard
                         savedTechnicians={savedTechnicians}

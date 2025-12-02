@@ -30,7 +30,7 @@ export default function Layout({ children, activeTab, setActiveTab, status, tota
                 <div className="max-w-[95%] mx-auto flex justify-between items-center">
                     <div className="flex items-center gap-4">
                         <h1 className="text-xl font-bold flex items-center gap-2">
-                            <Briefcase size={24} /> Accurate Industries Service Quoter
+                            <Briefcase size={24} /> Accurate Industries - Service Quotation & Billing Setup
                         </h1>
                         {getStatusBadge()}
                         <button

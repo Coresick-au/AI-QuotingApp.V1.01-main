@@ -26,6 +26,8 @@ function App() {
         saveAsDefaults={quote.saveAsDefaults}
         resetToDefaults={quote.resetToDefaults}
         savedDefaultRates={quote.savedDefaultRates}
+        exportState={quote.exportState}
+        importState={quote.importState}
       />
     );
   }

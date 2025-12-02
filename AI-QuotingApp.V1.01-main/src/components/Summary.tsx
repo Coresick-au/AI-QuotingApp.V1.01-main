@@ -10,10 +10,43 @@ interface SummaryProps {
 export default function Summary({ quote }: SummaryProps) {
     const {
         shifts, extras, rates, calculateShiftBreakdown, totalCost, jobDetails, setJobDetails, status,
-        reportingCost, travelChargeCost, isLocked
+        reportingCost, travelChargeCost, isLocked, totalNTHrs, totalOTHrs
     } = quote;
 
     const [showBreakdownModal, setShowBreakdownModal] = useState(false);
+
+    const getAggregatedShifts = () => {
+        const aggregated = new Map();
+        
+        shifts.forEach(shift => {
+            // Create a unique key based on all fields except tech
+            const key = JSON.stringify({
+                date: shift.date,
+                dayType: shift.dayType,
+                startTime: shift.startTime,
+                finishTime: shift.finishTime,
+                travelIn: shift.travelIn,
+                travelOut: shift.travelOut,
+                vehicle: shift.vehicle,
+                perDiem: shift.perDiem,
+                isNightShift: shift.isNightShift
+            });
+            
+            if (aggregated.has(key)) {
+                const existing = aggregated.get(key);
+                existing.techCount++;
+                existing.techs.push(shift.tech);
+            } else {
+                aggregated.set(key, {
+                    ...shift,
+                    techCount: 1,
+                    techs: [shift.tech]
+                });
+            }
+        });
+        
+        return Array.from(aggregated.values());
+    };
 
     const formatMoney = (amount: number) => new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD' }).format(amount);
 
@@ -84,11 +117,12 @@ export default function Summary({ quote }: SummaryProps) {
 
     const generateShiftBreakdown = () => {
         let breakdown = 'SHIFT BREAKDOWN\n\n';
+        const aggregatedShifts = getAggregatedShifts();
 
-        shifts.forEach((shift, index) => {
+        aggregatedShifts.forEach((shift, index) => {
             const { breakdown: b } = calculateShiftBreakdown(shift);
             breakdown += `Shift ${index + 1}:\n`;
-            breakdown += `Date: ${shift.date} | Tech: ${shift.tech}\n`;
+            breakdown += `Date: ${shift.date} | ${shift.techCount > 1 ? `Techs x ${shift.techCount}` : `Tech: ${shift.tech}`}\n`;
             breakdown += `Time: ${shift.startTime} - ${shift.finishTime}\n`;
             breakdown += `Day Type: ${shift.dayType}${shift.isNightShift ? ' (Night Shift)' : ''}\n`;
             breakdown += `\nHours Breakdown:\n`;
@@ -96,6 +130,9 @@ export default function Summary({ quote }: SummaryProps) {
             breakdown += `  Site NT: ${b.siteNT.toFixed(2)}h | OT: ${b.siteOT.toFixed(2)}h\n`;
             breakdown += `  Travel Out NT: ${b.travelOutNT.toFixed(2)}h | OT: ${b.travelOutOT.toFixed(2)}h\n`;
             breakdown += `  Total Hours: ${b.totalHours.toFixed(2)}h (Site: ${b.siteHours.toFixed(2)}h)\n`;
+            if (shift.techCount > 1) {
+                breakdown += `  Technicians: ${shift.techs.join(', ')}\n`;
+            }
             breakdown += `\n`;
         });
 
@@ -149,36 +186,26 @@ export default function Summary({ quote }: SummaryProps) {
 
                     <div className="space-y-3">
                         <div className="flex justify-between py-2 border-b border-gray-700">
-                            <span className="text-slate-300">Site Labor (Normal)</span>
-                            <span className="font-mono">
-                                {formatMoney(shifts.reduce((acc, s) => acc + (calculateShiftBreakdown(s).breakdown.siteNT * rates.siteNormal), 0))}
-                            </span>
-                        </div>
-                        <div className="flex justify-between py-2 border-b border-gray-700">
-                            <span className="text-slate-300">Site Labor (Overtime)</span>
+                            <span className="text-slate-300">Labor (Normal) ({totalNTHrs.toFixed(2)}h)</span>
                             <span className="font-mono">
                                 {formatMoney(shifts.reduce((acc, s) => {
                                     const { breakdown } = calculateShiftBreakdown(s);
-                                    const rate = s.dayType === 'publicHoliday' ? rates.publicHoliday : (s.dayType === 'weekend' ? rates.weekend : rates.siteOvertime);
-                                    return acc + (breakdown.siteOT * rate);
+                                    const siteNTCost = breakdown.siteNT * rates.siteNormal;
+                                    const travelNTCost = (breakdown.travelInNT + breakdown.travelOutNT) * rates.siteNormal;
+                                    return acc + siteNTCost + travelNTCost;
                                 }, 0))}
                             </span>
                         </div>
                         <div className="flex justify-between py-2 border-b border-gray-700">
-                            <span className="text-slate-300">Travel Labor (NT)</span>
+                            <span className="text-slate-300">Labor (Overtime) ({totalOTHrs.toFixed(2)}h)</span>
                             <span className="font-mono">
                                 {formatMoney(shifts.reduce((acc, s) => {
                                     const { breakdown } = calculateShiftBreakdown(s);
-                                    return acc + (breakdown.travelInNT * rates.travel) + (breakdown.travelOutNT * rates.travel);
-                                }, 0))}
-                            </span>
-                        </div>
-                        <div className="flex justify-between py-2 border-b border-gray-700">
-                            <span className="text-slate-300">Travel Labor (OT)</span>
-                            <span className="font-mono">
-                                {formatMoney(shifts.reduce((acc, s) => {
-                                    const { breakdown } = calculateShiftBreakdown(s);
-                                    return acc + (breakdown.travelInOT * rates.travelOvertime) + (breakdown.travelOutOT * rates.travelOvertime);
+                                    const siteOTRate = s.dayType === 'publicHoliday' ? rates.publicHoliday : (s.dayType === 'weekend' ? rates.weekend : rates.siteOvertime);
+                                    const siteOTCost = breakdown.siteOT * siteOTRate;
+                                    const travelOTRate = s.dayType === 'publicHoliday' ? rates.publicHoliday : (s.dayType === 'weekend' ? rates.weekend : rates.siteOvertime);
+                                    const travelOTCost = (breakdown.travelInOT + breakdown.travelOutOT) * travelOTRate;
+                                    return acc + siteOTCost + travelOTCost;
                                 }, 0))}
                             </span>
                         </div>

@@ -320,6 +320,68 @@ export function useQuote() {
         ));
     };
 
+    const exportState = () => {
+        const state = {
+            savedQuotes,
+            savedCustomers,
+            savedDefaultRates,
+            savedTechnicians,
+            exportDate: new Date().toISOString()
+        };
+        
+        const dataStr = JSON.stringify(state, null, 2);
+        const blob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        
+        const link = document.createElement('a');
+        link.href = url;
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+        const dateStr = new Date().toISOString().split('T')[0];
+        link.download = `${dateStr}_AI-ServiceQuoterBackup_${timestamp}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    };
+
+    const importState = (fileContent: string) => {
+        try {
+            const state = JSON.parse(fileContent);
+            
+            if (state.savedQuotes && Array.isArray(state.savedQuotes)) {
+                setSavedQuotes(state.savedQuotes);
+            }
+            
+            if (state.savedCustomers && Array.isArray(state.savedCustomers)) {
+                setSavedCustomers(state.savedCustomers);
+            }
+            
+            if (state.savedDefaultRates && typeof state.savedDefaultRates === 'object') {
+                setSavedDefaultRates(state.savedDefaultRates);
+            }
+            
+            if (state.savedTechnicians && Array.isArray(state.savedTechnicians)) {
+                setSavedTechnicians(state.savedTechnicians);
+            }
+            
+            return true;
+        } catch (error) {
+            console.error('Failed to import state:', error);
+            return false;
+        }
+    };
+
+    // Calculate total hours across all shifts
+    const totalNTHrs = shifts.reduce((acc, shift) => {
+        const { breakdown } = calculateShiftBreakdown(shift);
+        return acc + breakdown.siteNT + breakdown.travelInNT + breakdown.travelOutNT;
+    }, 0);
+
+    const totalOTHrs = shifts.reduce((acc, shift) => {
+        const { breakdown } = calculateShiftBreakdown(shift);
+        return acc + breakdown.siteOT + breakdown.travelInOT + breakdown.travelOutOT;
+    }, 0);
+
     return {
         // Global
         savedQuotes,
@@ -337,6 +399,10 @@ export function useQuote() {
         deleteTechnician,
         saveAsDefaults,
         resetToDefaults,
+        
+        // Backup/Restore
+        exportState,
+        importState,
 
         // Active Quote
         status,
@@ -358,6 +424,8 @@ export function useQuote() {
         // Calculations
         calculateShiftBreakdown,
         totalCost,
+        totalNTHrs,
+        totalOTHrs,
         reportingCost,
         travelChargeCost,
         totalHours,

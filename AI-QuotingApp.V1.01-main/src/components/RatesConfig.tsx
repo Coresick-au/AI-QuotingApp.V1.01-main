@@ -69,8 +69,8 @@ export default function RatesConfig({ rates, setRates, saveAsDefaults, resetToDe
         <div className="bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-700">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                 <div>
-                    <h2 className="text-lg font-semibold text-slate-200">Service Technician Rates</h2>
-                    <p className="text-sm text-slate-400 mt-1">Configure hourly rates and allowances for this customer</p>
+                    <h2 className="text-lg font-semibold text-slate-200">Current Quote Rates Configuration</h2>
+                    <p className="text-sm text-slate-400 mt-1">Rates configured here apply exclusively to the current active quote and will not modify customer default profiles.</p>
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -294,22 +294,6 @@ export default function RatesConfig({ rates, setRates, saveAsDefaults, resetToDe
                 </h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
-                    <div>
-                        <label className="block text-sm text-slate-300 mb-1">Travel Rate - Normal Time</label>
-                        <div className="flex items-center gap-2">
-                            <span className="text-slate-400">$</span>
-                            <input
-                                disabled={isLocked}
-                                type="number"
-                                step="1"
-                                value={rates.travel}
-                                onChange={(e) => setRates({ ...rates, travel: parseFloat(e.target.value) || 0 })}
-                                className={`border border-gray-600 rounded p-2 w-full bg-gray-700 text-slate-100 ${isLocked ? 'bg-gray-600 opacity-50 text-slate-400' : ''}`}
-                            />
-                            <span className="text-slate-400">/hr</span>
-                        </div>
-                    </div>
-
                     <div>
                         <label className="block text-sm text-slate-300 mb-1">Travel Charge</label>
                         <div className="flex items-center gap-2">

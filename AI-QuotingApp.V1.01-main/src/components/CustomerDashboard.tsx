@@ -36,6 +36,7 @@ export default function CustomerDashboard({
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [editName, setEditName] = useState('');
     const [editRates, setEditRates] = useState<Rates>(DEFAULT_RATES);
+    const [showDefaultRates, setShowDefaultRates] = useState(false);
 
     const handleSelect = (customer: Customer) => {
         setSelectedId(customer.id);
@@ -116,19 +117,31 @@ export default function CustomerDashboard({
 
             {/* Editor */}
             <div className="lg:col-span-2 flex flex-col gap-4 overflow-y-auto">
-                {/* Dedicated Default Rates Management */}
-                <div className="bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-700">
-                    <div className="mb-4">
-                        <h2 className="text-lg font-semibold text-slate-200 mb-2">Default Rates Management</h2>
-                        <p className="text-sm text-slate-400">Configure system-wide default rates for new customers</p>
-                    </div>
-                    <RatesConfig
-                        rates={savedDefaultRates}
-                        setRates={saveAsDefaults}
-                        saveAsDefaults={saveAsDefaults}
-                        resetToDefaults={resetToDefaults}
-                    />
+                {/* Toggle Default Rates */}
+                <div className="bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-700">
+                    <button
+                        onClick={() => setShowDefaultRates(!showDefaultRates)}
+                        className="w-full bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-600 transition-colors flex items-center justify-center gap-2 font-medium"
+                    >
+                        {showDefaultRates ? 'Hide' : 'Show'} Default Rates
+                    </button>
                 </div>
+
+                {/* Dedicated Default Rates Management */}
+                {showDefaultRates && (
+                    <div className="bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-700">
+                        <div className="mb-4">
+                            <h2 className="text-lg font-semibold text-slate-200 mb-2">Default Rates Management</h2>
+                            <p className="text-sm text-slate-400">Configure system-wide default rates for new customers</p>
+                        </div>
+                        <RatesConfig
+                            rates={savedDefaultRates}
+                            setRates={saveAsDefaults}
+                            saveAsDefaults={saveAsDefaults}
+                            resetToDefaults={resetToDefaults}
+                        />
+                    </div>
+                )}
 
                 {/* Customer-Specific Editor (Conditional) */}
                 {selectedId ? (

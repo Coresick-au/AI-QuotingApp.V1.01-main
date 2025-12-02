@@ -3,6 +3,7 @@ import { Save, Lock, FileCheck, Unlock, ArrowLeft } from 'lucide-react';
 import JobDetails from './JobDetails';
 import Timesheet from './Timesheet';
 import Extras from './Extras';
+import HoursVisualizer from '../HoursVisualizer';
 import type { useQuote } from '../../hooks/useQuote';
 
 interface QuoteBuilderProps {
@@ -54,7 +55,7 @@ export default function QuoteBuilder({ quote }: QuoteBuilderProps) {
 
                     {savedQuotes.length > 1 && (
                         <div className="flex items-center gap-2">
-                            <label className="text-sm text-slate-400">Switch Quote:</label>
+                            <label className="text-sm text-slate-400">Active Quote:</label>
                             <select
                                 value={activeQuoteId || ''}
                                 onChange={(e) => loadQuote(e.target.value)}
@@ -150,6 +151,11 @@ export default function QuoteBuilder({ quote }: QuoteBuilderProps) {
                 addExtra={addExtra}
                 updateExtra={updateExtra}
                 removeExtra={removeExtra}
+            />
+
+            <HoursVisualizer
+                shifts={shifts}
+                calculateShiftBreakdown={calculateShiftBreakdown}
             />
         </div>
     );
