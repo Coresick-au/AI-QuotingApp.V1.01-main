@@ -38,6 +38,8 @@ function App() {
     );
   }
 
+  const customerName = quote.jobDetails.customer;
+
   return (
     <Layout
       activeTab={activeTab}
@@ -45,6 +47,7 @@ function App() {
       status={quote.status}
       totalCost={quote.totalCost}
       exitQuote={quote.exitQuote}
+      customerName={customerName}
     >
       {activeTab === 'quote' && <QuoteBuilder quote={quote} />}
       {activeTab === 'rates' && <RatesConfig rates={quote.rates} setRates={quote.setRates} isLocked={quote.isLocked} />}

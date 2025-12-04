@@ -9,15 +9,16 @@ interface LayoutProps {
     status: string;
     totalCost: number;
     exitQuote: () => void;
+    customerName: string;
 }
 
-export default function Layout({ children, activeTab, setActiveTab, status, totalCost, exitQuote }: LayoutProps) {
+export default function Layout({ children, activeTab, setActiveTab, status, totalCost, exitQuote, customerName }: LayoutProps) {
     const formatMoney = (amount: number) => new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD' }).format(amount);
 
     const getStatusBadge = () => {
         switch (status) {
             case 'draft': return <span className="bg-warning/20 text-warning text-xs px-2 py-1 rounded-full font-bold">DRAFT QUOTE</span>;
-            case 'quoted': return <span className="bg-success/20 text-success text-xs px-2 py-1 rounded-full font-bold">QUOTE SAVED</span>;
+            case 'quoted': return <span className="bg-success/20 text-success text-xs px-2 py-1 rounded-full font-bold">QUOTE IN SYSTEM</span>;
             case 'invoice': return <span className="bg-purple-900/20 text-purple-300 text-xs px-2 py-1 rounded-full font-bold">DRAFT INVOICE</span>;
             case 'closed': return <span className="bg-emerald-900/20 text-emerald-300 text-xs px-2 py-1 rounded-full font-bold">INVOICE CLOSED</span>;
             default: return null;
@@ -31,6 +32,16 @@ export default function Layout({ children, activeTab, setActiveTab, status, tota
             case 'invoice': return 'Invoice';
             case 'closed': return 'Closed Invoice';
             default: return 'Quote Builder';
+        }
+    };
+
+    const getDocumentTitle = () => {
+        switch (status) {
+            case 'draft': return 'Draft Quote';
+            case 'quoted': return 'Quoted';
+            case 'invoice': return 'Draft Invoice';
+            case 'closed': return 'Closed Invoice';
+            default: return 'Quote Manager';
         }
     };
 
@@ -126,11 +137,20 @@ export default function Layout({ children, activeTab, setActiveTab, status, tota
 
             {/* Main Content Area */}
             <main className="flex-1 overflow-y-auto">
-                {/* Simplified Top Header (Just for context/status inside main view) */}
+                {/* Dynamic Top Header: Document Status and Customer Name */}
                 <header className="bg-bg-secondary text-white p-4 shadow-md sticky top-0 z-10 border-b border-slate-700">
-                    <div className="max-w-[95%] flex items-center justify-between">
-                        <div className="text-sm font-semibold text-slate-200 flex items-center gap-2">
-                            {getWorkspaceLabel()}: <span className="font-normal text-slate-400 capitalize">{activeTab}</span>
+                    <div className="max-w-[95%] mx-auto flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <h2 className="text-xl font-bold text-accent-primary">
+                                {getDocumentTitle()}
+                            </h2>
+                            <span className="text-lg font-light text-slate-400">|</span>
+                            <span className="text-lg text-slate-300">
+                                Customer: {customerName || 'No Customer Selected'}
+                            </span>
+                        </div>
+                        <div className="text-sm">
+                            {getStatusBadge()}
                         </div>
                     </div>
                 </header>
