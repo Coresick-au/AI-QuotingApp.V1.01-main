@@ -16,7 +16,8 @@ const MOCK_RATES: Rates = {
     perDiem: 100,
     standardDayRate: 0,
     weekendDayRate: 0,
-    costOfLabour: 100 // Added to satisfy 'Rates' interface
+    costOfLabour: 100, // Added to satisfy 'Rates' interface
+    rateNotes: 'Test Notes'
 };
 
 describe('Business Logic - Shift Calculations', () => {
