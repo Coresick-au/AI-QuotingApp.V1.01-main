@@ -4,20 +4,21 @@ import { calculateShiftBreakdown as calculateLogic } from '../logic';
 
 
 export const DEFAULT_RATES: Rates = {
-    siteNormal: 150,
-    siteOvertime: 225,
-    weekend: 220,
-    publicHoliday: 300,
-    officeReporting: 85,
+    siteNormal: 160,
+    siteOvertime: 190,
+    weekend: 210,
+    publicHoliday: 235,
+    officeReporting: 160,
     travel: 75,
     travelOvertime: 112,
     travelCharge: 1.10,
-    travelChargeExBrisbane: 1.32,
-    vehicle: 45,
-    perDiem: 45,
-    standardDayRate: 1800,
-    weekendDayRate: 2640,
+    travelChargeExBrisbane: 0,
+    vehicle: 120,
+    perDiem: 90,
+    standardDayRate: 2055,
+    weekendDayRate: 2520,
     costOfLabour: 100,
+    rateNotes: 'Ex Banyo',
 };
 
 const DEFAULT_JOB_DETAILS: JobDetails = {
@@ -332,11 +333,11 @@ export function useQuote() {
             savedTechnicians,
             exportDate: new Date().toISOString()
         };
-        
+
         const dataStr = JSON.stringify(state, null, 2);
         const blob = new Blob([dataStr], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
-        
+
         const link = document.createElement('a');
         link.href = url;
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
@@ -351,23 +352,23 @@ export function useQuote() {
     const importState = (fileContent: string) => {
         try {
             const state = JSON.parse(fileContent);
-            
+
             if (state.savedQuotes && Array.isArray(state.savedQuotes)) {
                 setSavedQuotes(state.savedQuotes);
             }
-            
+
             if (state.savedCustomers && Array.isArray(state.savedCustomers)) {
                 setSavedCustomers(state.savedCustomers);
             }
-            
+
             if (state.savedDefaultRates && typeof state.savedDefaultRates === 'object') {
                 setSavedDefaultRates(state.savedDefaultRates);
             }
-            
+
             if (state.savedTechnicians && Array.isArray(state.savedTechnicians)) {
                 setSavedTechnicians(state.savedTechnicians);
             }
-            
+
             return true;
         } catch (error) {
             console.error('Failed to import state:', error);
@@ -403,7 +404,7 @@ export function useQuote() {
         deleteTechnician,
         saveAsDefaults,
         resetToDefaults,
-        
+
         // Backup/Restore
         exportState,
         importState,

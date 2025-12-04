@@ -3,6 +3,8 @@ import Layout from './components/Layout';
 import QuoteBuilder from './components/QuoteBuilder/QuoteBuilder';
 import RatesConfig from './components/RatesConfig';
 import Summary from './components/Summary';
+import CustomerDashboard from './components/CustomerDashboard';
+import BackupRestore from './components/BackupRestore';
 import { useQuote } from './hooks/useQuote';
 
 // Lazy load the Dashboard for performance
@@ -47,6 +49,22 @@ function App() {
       {activeTab === 'quote' && <QuoteBuilder quote={quote} />}
       {activeTab === 'rates' && <RatesConfig rates={quote.rates} setRates={quote.setRates} isLocked={quote.isLocked} />}
       {activeTab === 'summary' && <Summary quote={quote} />}
+      {activeTab === 'customers' && (
+        <CustomerDashboard
+          savedCustomers={quote.savedCustomers}
+          saveCustomer={quote.saveCustomer}
+          deleteCustomer={quote.deleteCustomer}
+          saveAsDefaults={quote.saveAsDefaults}
+          resetToDefaults={quote.resetToDefaults}
+          savedDefaultRates={quote.savedDefaultRates}
+        />
+      )}
+      {activeTab === 'backup' && (
+        <BackupRestore
+          exportState={quote.exportState}
+          importState={quote.importState}
+        />
+      )}
     </Layout>
   );
 }

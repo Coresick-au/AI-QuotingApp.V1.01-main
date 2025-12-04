@@ -15,12 +15,20 @@ export interface Rates {
     standardDayRate: number; // 12hrs
     weekendDayRate: number; // 12hrs
     costOfLabour: number; // internal cost per hour for margin calculation
+    rateNotes: string; // Notes specific to the rate setup (e.g., Charge Origin)
+}
+
+export interface Contact {
+    name: string;
+    phone: string;
+    email: string;
 }
 
 export interface Customer {
     id: string;
     name: string;
     rates: Rates;
+    contacts: Contact[]; // List of main contacts with name, phone, email
 }
 
 export interface JobDetails {

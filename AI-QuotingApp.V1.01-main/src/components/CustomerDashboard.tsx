@@ -1,17 +1,18 @@
 
 import { useState } from 'react';
-import { Plus, Trash2, Save, User } from 'lucide-react';
+import { Plus, Trash2, Save, User, UserPlus, X } from 'lucide-react';
 import RatesConfig from './RatesConfig';
-import type { Customer, Rates } from '../types';
+import type { Customer, Rates, Contact } from '../types';
 
 interface CustomerDashboardProps {
     savedCustomers: Customer[];
     saveCustomer: (customer: Customer) => void;
     deleteCustomer: (id: string) => void;
     saveAsDefaults: (rates: Rates) => void;
-    resetToDefaults: () => void; // Kept in interface but not used directly
+    resetToDefaults: () => void;
     savedDefaultRates: Rates;
 }
+
 
 const DEFAULT_RATES: Rates = {
     siteNormal: 160,
@@ -19,15 +20,16 @@ const DEFAULT_RATES: Rates = {
     weekend: 210,
     publicHoliday: 235,
     officeReporting: 160,
-    travel: 120,
-    travelOvertime: 120,
-    travelCharge: 1.30,
+    travel: 75,
+    travelOvertime: 112,
+    travelCharge: 1.10,
     travelChargeExBrisbane: 0,
     vehicle: 120,
     perDiem: 90,
-    standardDayRate: 2040,
+    standardDayRate: 2055,
     weekendDayRate: 2520,
-    costOfLabour: 100
+    costOfLabour: 100,
+    rateNotes: 'Ex Banyo'
 };
 
 export default function CustomerDashboard({
@@ -37,12 +39,17 @@ export default function CustomerDashboard({
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [editName, setEditName] = useState('');
     const [editRates, setEditRates] = useState<Rates>(DEFAULT_RATES);
+    const [editContacts, setEditContacts] = useState<Contact[]>([]);
+    const [newContactName, setNewContactName] = useState('');
+    const [newContactPhone, setNewContactPhone] = useState('');
+    const [newContactEmail, setNewContactEmail] = useState('');
     const [showDefaultRates, setShowDefaultRates] = useState(false);
 
     const handleSelect = (customer: Customer) => {
         setSelectedId(customer.id);
         setEditName(customer.name);
         setEditRates(customer.rates);
+        setEditContacts(customer.contacts || []);
     };
 
     const handleCreate = () => {
@@ -50,9 +57,12 @@ export default function CustomerDashboard({
         const newCustomer: Customer = {
             id: newId,
             name: 'New Customer',
-            rates: DEFAULT_RATES
+            rates: DEFAULT_RATES,
+            contacts: [],
         };
         saveCustomer(newCustomer);
+        setEditRates(DEFAULT_RATES);
+        setEditContacts([]);
         handleSelect(newCustomer);
     };
 
@@ -61,9 +71,28 @@ export default function CustomerDashboard({
         saveCustomer({
             id: selectedId,
             name: editName,
-            rates: editRates
+            rates: editRates,
+            contacts: editContacts,
         });
         alert('Customer saved!');
+    };
+
+    const addContact = () => {
+        if (newContactName.trim()) {
+            const newContact: Contact = {
+                name: newContactName.trim(),
+                phone: newContactPhone.trim(),
+                email: newContactEmail.trim()
+            };
+            setEditContacts([...editContacts, newContact]);
+            setNewContactName('');
+            setNewContactPhone('');
+            setNewContactEmail('');
+        }
+    };
+
+    const removeContact = (index: number) => {
+        setEditContacts(editContacts.filter((_, i) => i !== index));
     };
 
     const handleDelete = (id: string) => {
@@ -148,7 +177,7 @@ export default function CustomerDashboard({
                 {selectedId ? (
                     <>
                         <div className="bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-700">
-                            <div className="flex justify-between items-end">
+                            <div className="flex justify-between items-end mb-4">
                                 <div className="w-full max-w-md">
                                     <label className="block text-sm text-slate-300 mb-1">Customer Name</label>
                                     <input
@@ -166,6 +195,87 @@ export default function CustomerDashboard({
                                     <Save size={18} /> Save Changes
                                 </button>
                             </div>
+
+                            {/* Contacts and Rate Notes Section */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-gray-700">
+
+                                {/* Contacts Management */}
+                                <div>
+                                    <label className="block text-sm text-slate-300 mb-2 flex items-center gap-2">
+                                        <UserPlus size={16} /> Main Quote Contacts
+                                    </label>
+
+                                    {/* Existing Contacts List */}
+                                    <div className="space-y-2 mb-3">
+                                        {editContacts.map((contact, index) => (
+                                            <div key={index} className="bg-gray-700 p-3 rounded border border-gray-600">
+                                                <div className="flex justify-between items-start mb-1">
+                                                    <span className="text-sm font-semibold text-slate-200">{contact.name}</span>
+                                                    <button
+                                                        onClick={() => removeContact(index)}
+                                                        className="text-slate-400 hover:text-red-400"
+                                                    >
+                                                        <X size={14} />
+                                                    </button>
+                                                </div>
+                                                {contact.phone && (
+                                                    <div className="text-xs text-slate-400">📞 {contact.phone}</div>
+                                                )}
+                                                {contact.email && (
+                                                    <div className="text-xs text-slate-400">✉️ {contact.email}</div>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    {/* Add New Contact Form */}
+                                    <div className="space-y-2 p-3 bg-gray-700/50 rounded border border-gray-600">
+                                        <input
+                                            type="text"
+                                            value={newContactName}
+                                            onChange={(e) => setNewContactName(e.target.value)}
+                                            placeholder="Name *"
+                                            className="w-full border border-gray-600 rounded bg-gray-700 text-slate-100 px-3 py-2 text-sm focus:outline-none focus:border-primary-500"
+                                        />
+                                        <input
+                                            type="tel"
+                                            value={newContactPhone}
+                                            onChange={(e) => setNewContactPhone(e.target.value)}
+                                            placeholder="Phone"
+                                            className="w-full border border-gray-600 rounded bg-gray-700 text-slate-100 px-3 py-2 text-sm focus:outline-none focus:border-primary-500"
+                                        />
+                                        <input
+                                            type="email"
+                                            value={newContactEmail}
+                                            onChange={(e) => setNewContactEmail(e.target.value)}
+                                            placeholder="Email"
+                                            className="w-full border border-gray-600 rounded bg-gray-700 text-slate-100 px-3 py-2 text-sm focus:outline-none focus:border-primary-500"
+                                        />
+                                        <button
+                                            onClick={addContact}
+                                            className="w-full bg-primary-600 text-white py-2 rounded hover:bg-primary-700 transition-colors flex items-center justify-center gap-2"
+                                            title="Add Contact"
+                                        >
+                                            <Plus size={18} /> Add Contact
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Rate Notes */}
+                                <div>
+                                    <label className="block text-sm text-slate-300 mb-1">
+                                        Rate Notes (e.g., Charge Origin)
+                                    </label>
+                                    <textarea
+                                        rows={4}
+                                        value={editRates.rateNotes}
+                                        onChange={(e) => setEditRates({ ...editRates, rateNotes: e.target.value })}
+                                        className="w-full p-2 border border-gray-600 rounded bg-gray-700 text-slate-100 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none resize-none"
+                                        placeholder="E.g., All travel calculated Ex Rockhampton Office"
+                                    />
+                                </div>
+                            </div>
+
                         </div>
 
                         <div className="bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-700">

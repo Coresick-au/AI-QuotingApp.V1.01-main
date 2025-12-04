@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Save, Lock, FileCheck, Unlock, ArrowLeft } from 'lucide-react';
+import { Save, Lock, FileCheck, Unlock } from 'lucide-react';
 import JobDetails from './JobDetails';
 import Timesheet from './Timesheet';
 import Extras from './Extras';
@@ -16,8 +16,9 @@ export default function QuoteBuilder({ quote }: QuoteBuilderProps) {
         jobDetails, setJobDetails,
         shifts, addShift, updateShift, removeShift, calculateShiftBreakdown,
         extras, addExtra, updateExtra, removeExtra,
-        isLocked, exitQuote, savedQuotes, loadQuote, activeQuoteId,
-        savedCustomers, setRates, renameTechnician
+        isLocked, savedQuotes, loadQuote, activeQuoteId,
+        savedCustomers, setRates, renameTechnician,
+        totalHours, totalNTHrs, totalOTHrs
     } = quote;
 
     const [highlightMissingFields, setHighlightMissingFields] = useState(false);
@@ -51,13 +52,6 @@ export default function QuoteBuilder({ quote }: QuoteBuilderProps) {
             {/* Workflow Controls */}
             <div className="flex justify-between items-center">
                 <div className="flex items-center gap-4">
-                    <button
-                        onClick={exitQuote}
-                        className="bg-gray-700 text-primary-400 px-4 py-2 rounded shadow hover:bg-gray-600 flex items-center gap-2 transition-colors border border-gray-600"
-                    >
-                        <ArrowLeft size={16} /> Back to Dashboard
-                    </button>
-
                     {savedQuotes.length > 1 && (
                         <div className="flex items-center gap-2">
                             <label className="text-sm text-slate-400">Active Quote:</label>
@@ -109,6 +103,16 @@ export default function QuoteBuilder({ quote }: QuoteBuilderProps) {
                                 <span className="text-sm font-medium">Invoice Mode</span>
                             </div>
                             <button
+                                onClick={() => {
+                                    if (confirm("Are you sure you want to edit this invoice? This will unlock it for modifications.")) {
+                                        setStatus('draft');
+                                    }
+                                }}
+                                className="bg-amber-600 text-white px-3 py-1.5 rounded text-sm flex items-center gap-2 hover:bg-amber-700 font-medium"
+                            >
+                                <Unlock size={16} /> Edit Invoice
+                            </button>
+                            <button
                                 onClick={() => setStatus('closed')}
                                 className="bg-emerald-600 text-white px-4 py-2 rounded shadow flex items-center gap-2 hover:bg-emerald-700 font-medium"
                             >
@@ -119,6 +123,16 @@ export default function QuoteBuilder({ quote }: QuoteBuilderProps) {
                     {status === 'closed' && (
                         <div className="flex items-center gap-3">
                             <span className="text-slate-400 text-sm flex items-center gap-1"><Lock size={14} /> Invoice Closed</span>
+                            <button
+                                onClick={() => {
+                                    if (confirm("Are you sure you want to edit this closed invoice? This will revert it to draft status.")) {
+                                        setStatus('draft');
+                                    }
+                                }}
+                                className="bg-amber-600 text-white px-3 py-1.5 rounded text-sm flex items-center gap-2 hover:bg-amber-700 font-medium"
+                            >
+                                <Unlock size={16} /> Edit Invoice
+                            </button>
                             <button
                                 onClick={() => setStatus('invoice')}
                                 className="bg-amber-600 text-white px-3 py-1.5 rounded text-sm flex items-center gap-2 hover:bg-amber-700 font-medium"
@@ -158,6 +172,25 @@ export default function QuoteBuilder({ quote }: QuoteBuilderProps) {
                 updateExtra={updateExtra}
                 removeExtra={removeExtra}
             />
+
+            {/* New Total Hours Box - Displays Hours (NT/OT) calculated in useQuote.ts */}
+            <div className="bg-bg-secondary p-4 rounded-lg shadow-sm border border-slate-700 flex justify-between items-center">
+                <div className="text-lg font-bold text-slate-300 uppercase tracking-wider">Total Shift Hours Summary:</div>
+                <div className="flex gap-6 items-center">
+                    <div className="flex flex-col items-end">
+                        <span className="text-xs text-blue-400">Normal Time (NT)</span>
+                        <span className="text-xl font-bold text-blue-200">{totalNTHrs.toFixed(2)}h</span>
+                    </div>
+                    <div className="flex flex-col items-end">
+                        <span className="text-xs text-amber-400">Overtime (OT)</span>
+                        <span className="text-xl font-bold text-amber-200">{totalOTHrs.toFixed(2)}h</span>
+                    </div>
+                    <div className="flex flex-col items-end border-l pl-4 border-slate-700">
+                        <span className="text-xs text-slate-400">Grand Total</span>
+                        <span className="text-2xl font-bold text-accent-primary">{totalHours.toFixed(2)}h</span>
+                    </div>
+                </div>
+            </div>
 
             <HoursVisualizer
                 shifts={shifts}

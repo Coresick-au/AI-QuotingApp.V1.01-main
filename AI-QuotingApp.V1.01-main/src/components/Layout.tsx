@@ -1,5 +1,5 @@
 import React from 'react';
-import { Briefcase, Calendar, Settings, FileText, ArrowLeft } from 'lucide-react';
+import { Home, Settings, FileText, Calendar, Briefcase, Users, Database } from 'lucide-react';
 import clsx from 'clsx';
 
 interface LayoutProps {
@@ -19,76 +19,126 @@ export default function Layout({ children, activeTab, setActiveTab, status, tota
             case 'draft': return <span className="bg-warning/20 text-warning text-xs px-2 py-1 rounded-full font-bold">DRAFT QUOTE</span>;
             case 'quoted': return <span className="bg-success/20 text-success text-xs px-2 py-1 rounded-full font-bold">QUOTE SAVED</span>;
             case 'invoice': return <span className="bg-purple-900/20 text-purple-300 text-xs px-2 py-1 rounded-full font-bold">DRAFT INVOICE</span>;
+            case 'closed': return <span className="bg-emerald-900/20 text-emerald-300 text-xs px-2 py-1 rounded-full font-bold">INVOICE CLOSED</span>;
             default: return null;
         }
     };
 
+    const getWorkspaceLabel = () => {
+        switch (status) {
+            case 'draft': return 'Quote Builder';
+            case 'quoted': return 'Submitted Quote';
+            case 'invoice': return 'Invoice';
+            case 'closed': return 'Closed Invoice';
+            default: return 'Quote Builder';
+        }
+    };
+
     return (
-        <div className="min-h-screen bg-bg-primary text-slate-200 font-sans">
-            {/* Header */}
-            <header className="bg-bg-secondary text-white p-4 shadow-md sticky top-0 z-10 border-b border-slate-700">
-                <div className="max-w-[95%] mx-auto flex justify-between items-center">
-                    <div className="flex items-center gap-4">
-                        <h1 className="text-xl font-bold flex items-center gap-2">
-                            <Briefcase size={24} className="text-accent-primary" /> Accurate Industries - Service Quote & Invoice Manager
-                        </h1>
-                        {getStatusBadge()}
+        <div className="flex min-h-screen bg-bg-primary text-slate-200 font-sans">
+            {/* Side Panel Navigation (Fixed) */}
+            <nav className="w-64 bg-bg-secondary flex flex-col p-4 shadow-2xl z-20 sticky top-0 h-screen">
+
+                {/* App Menu Section */}
+                <div className="mb-6 pb-4 border-b border-gray-700">
+                    <div className="flex items-center gap-2 text-xl font-bold text-accent-primary mb-3">
+                        <Briefcase size={20} /> App Menu
+                    </div>
+                    <div className="flex flex-col gap-2">
                         <button
                             onClick={exitQuote}
-                            className="ml-6 px-3 py-1.5 bg-bg-tertiary text-slate-200 rounded-lg hover:bg-accent-primary/20 transition-colors flex items-center gap-2 text-sm border border-slate-700 hover:border-accent-primary hover:shadow-blue-glow"
+                            className="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-left text-slate-300 hover:bg-gray-700"
                             title="Return to Dashboard"
                         >
-                            <ArrowLeft size={16} /> Dashboard
+                            <Home size={18} /> Dashboard
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('customers')}
+                            className={clsx(
+                                "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-left",
+                                activeTab === 'customers'
+                                    ? 'bg-accent-primary/20 text-accent-primary font-bold'
+                                    : 'text-slate-300 hover:bg-gray-700'
+                            )}
+                        >
+                            <Users size={18} /> Customers
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('backup')}
+                            className={clsx(
+                                "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-left",
+                                activeTab === 'backup'
+                                    ? 'bg-accent-primary/20 text-accent-primary font-bold'
+                                    : 'text-slate-300 hover:bg-gray-700'
+                            )}
+                        >
+                            <Database size={18} /> Backup & Restore
                         </button>
                     </div>
-                    <div className="text-right">
-                        <div className="text-xs opacity-80">ESTIMATED TOTAL</div>
-                        <div className="text-2xl font-bold text-accent-primary">{formatMoney(totalCost)}</div>
-                    </div>
                 </div>
-            </header>
 
-            {/* Navigation - Folder Tab Style */}
-            <nav className="bg-bg-secondary border-b border-slate-700">
-                <div className="max-w-[95%] mx-auto flex gap-1 p-4 overflow-x-auto">
+                {/* Secondary Navigation (Quote Tabs) */}
+                <h3 className="text-xs uppercase text-slate-400 font-semibold mb-2 tracking-wider">{getWorkspaceLabel()}</h3>
+                <div className="flex flex-col gap-2">
                     <button
                         onClick={() => setActiveTab('quote')}
                         className={clsx(
-                            "flex items-center gap-2 px-4 py-2 rounded-t-lg transition-all font-medium",
-                            activeTab === 'quote' 
-                                ? 'bg-bg-primary text-accent-primary shadow-blue-glow border border-slate-700 border-b-0' 
-                                : 'bg-bg-tertiary/50 text-slate-400 hover:bg-bg-tertiary hover:text-slate-200'
+                            "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-left",
+                            activeTab === 'quote'
+                                ? 'bg-accent-primary/20 text-accent-primary font-bold'
+                                : 'text-slate-300 hover:bg-gray-700'
                         )}
                     >
-                        <Calendar size={18} /> {status === 'invoice' ? 'Invoice Builder' : 'Quote Builder'}
+                        <Calendar size={18} /> {status === 'invoice' || status === 'closed' ? 'Invoice Builder' : 'Quote Builder'}
                     </button>
                     <button
                         onClick={() => setActiveTab('summary')}
                         className={clsx(
-                            "flex items-center gap-2 px-4 py-2 rounded-t-lg transition-all font-medium",
-                            activeTab === 'summary' 
-                                ? 'bg-bg-primary text-accent-primary shadow-blue-glow border border-slate-700 border-b-0' 
-                                : 'bg-bg-tertiary/50 text-slate-400 hover:bg-bg-tertiary hover:text-slate-200'
+                            "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-left",
+                            activeTab === 'summary'
+                                ? 'bg-accent-primary/20 text-accent-primary font-bold'
+                                : 'text-slate-300 hover:bg-gray-700'
                         )}
                     >
-                        <FileText size={18} /> {status === 'closed' ? 'Closed Invoice Summary' : status === 'invoice' ? 'Invoice Summary' : 'Quote Summary'}
+                        <FileText size={18} /> {status === 'closed' ? 'Closed Summary' : 'Summary'}
                     </button>
                     <button
                         onClick={() => setActiveTab('rates')}
                         className={clsx(
-                            "flex items-center gap-2 px-4 py-2 rounded-t-lg transition-all font-medium",
-                            activeTab === 'rates' 
-                                ? 'bg-bg-primary text-accent-primary shadow-blue-glow border border-slate-700 border-b-0' 
-                                : 'bg-bg-tertiary/50 text-slate-400 hover:bg-bg-tertiary hover:text-slate-200'
+                            "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-left",
+                            activeTab === 'rates'
+                                ? 'bg-accent-primary/20 text-accent-primary font-bold'
+                                : 'text-slate-300 hover:bg-gray-700'
                         )}
                     >
                         <Settings size={18} /> Rates Configuration
                     </button>
                 </div>
+
+                {/* Footer / Status */}
+                <div className="mt-auto pt-4 border-t border-gray-700">
+                    <div className="mb-2">{getStatusBadge()}</div>
+                    <div className="text-xs opacity-80 text-slate-400">ESTIMATED TOTAL</div>
+                    <div className="text-xl font-bold text-accent-primary">{formatMoney(totalCost)}</div>
+                </div>
+
             </nav>
 
-            <main className="max-w-[95%] mx-auto p-4 md:p-6 space-y-6">
-                {children}
+            {/* Main Content Area */}
+            <main className="flex-1 overflow-y-auto">
+                {/* Simplified Top Header (Just for context/status inside main view) */}
+                <header className="bg-bg-secondary text-white p-4 shadow-md sticky top-0 z-10 border-b border-slate-700">
+                    <div className="max-w-[95%] flex items-center justify-between">
+                        <div className="text-sm font-semibold text-slate-200 flex items-center gap-2">
+                            {getWorkspaceLabel()}: <span className="font-normal text-slate-400 capitalize">{activeTab}</span>
+                        </div>
+                    </div>
+                </header>
+
+                {/* Main Content (children) */}
+                <div className="max-w-[95%] mx-auto p-4 md:p-6 space-y-6">
+                    {children}
+                </div>
             </main>
         </div>
     );
